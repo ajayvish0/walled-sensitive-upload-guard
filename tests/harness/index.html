@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>WG harness</title></head>
+<body>
+  <div id="log">
+    <div class="fake-user">user message</div>
+    <div class="fake-assistant"><p>assistant message</p></div>
+  </div>
+  <div id="composer" contenteditable="true" style="border:1px solid #888;min-height:30px"></div>
+  <button id="send">Send</button>
+  <input type="file" id="file" multiple>
+  <script>
+    window.__sent = [];
+    var composer = document.getElementById("composer");
+    function send() {
+      var text = composer.innerText;
+      if (!text.trim()) return;
+      window.__sent.push(text);
+      var u = document.createElement("div"); u.className = "fake-user"; u.textContent = text;
+      var a = document.createElement("div"); a.className = "fake-assistant"; a.textContent = "reply";
+      document.getElementById("log").append(u, a);
+      composer.innerText = "";
+    }
+    composer.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+    });
+    document.getElementById("send").addEventListener("click", send);
+  </script>
+</body>
+</html>
