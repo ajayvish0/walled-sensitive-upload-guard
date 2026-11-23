@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "walled-guard"
+version = "0.1.0"
+description = "Sensitive Upload Guard: desktop DLP for ChatGPT and Perplexity"
+requires-python = ">=3.11"
+dependencies = ["playwright", "pymupdf", "pillow", "rapidocr-onnxruntime"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+walled-guard = "walled_guard.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+walled_guard = ["inject/*.js"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
