@@ -2,8 +2,8 @@
 window.__WG_SITES = {
   chatgpt: {
     hosts: ["chatgpt.com"],
-    composer: ["#prompt-textarea", "div.ProseMirror[contenteditable='true']"],
-    sendButton: ["button[data-testid='send-button']", "button[aria-label*='Send' i]"],
+    composer: ["#prompt-textarea", "div.ProseMirror[contenteditable='true']", "textarea[aria-label='Chat with ChatGPT']", "#mobile-composer-prompt"],
+    sendButton: ["button[data-testid='send-button']", "button[aria-label='Send message']", "button[aria-label*='Send' i]"],
     responseSelectors: ["[data-message-author-role='assistant']"],
   },
   perplexity: {
