@@ -25,6 +25,57 @@
       if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
     });
     document.getElementById("send").addEventListener("click", send);
+
+    // ---- uploads (sha256 in pure JS: crypto.subtle is unavailable on insecure origins)
+    function sha256(bytes) {
+      var K = [], H = [], i, j;
+      var isPrime = function (n) { for (var d = 2; d * d <= n; d++) if (n % d === 0) return false; return true; };
+      var frac = function (x) { return ((x - Math.floor(x)) * 4294967296) | 0; };
+      for (var n = 2, c = 0; c < 64; n++) {
+        if (isPrime(n)) { if (c < 8) H[c] = frac(Math.pow(n, 1 / 2)); K[c++] = frac(Math.pow(n, 1 / 3)); }
+      }
+      var len = bytes.length, total = ((len + 9 + 63) >> 6) << 6, buf = new Uint8Array(total);
+      buf.set(bytes); buf[len] = 0x80;
+      var dv = new DataView(buf.buffer);
+      dv.setUint32(total - 8, Math.floor(len / 536870912)); dv.setUint32(total - 4, (len << 3) >>> 0);
+      var w = new Array(64), rr = function (v, n) { return (v >>> n) | (v << (32 - n)); };
+      for (var off = 0; off < total; off += 64) {
+        for (i = 0; i < 16; i++) w[i] = dv.getUint32(off + i * 4);
+        for (i = 16; i < 64; i++) {
+          var s0 = rr(w[i - 15], 7) ^ rr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+          var s1 = rr(w[i - 2], 17) ^ rr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+          w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+        }
+        var a = H.slice();
+        for (i = 0; i < 64; i++) {
+          var t1 = (a[7] + (rr(a[4], 6) ^ rr(a[4], 11) ^ rr(a[4], 25)) + ((a[4] & a[5]) ^ (~a[4] & a[6])) + K[i] + w[i]) | 0;
+          var t2 = ((rr(a[0], 2) ^ rr(a[0], 13) ^ rr(a[0], 22)) + ((a[0] & a[1]) ^ (a[0] & a[2]) ^ (a[1] & a[2]))) | 0;
+          a = [(t1 + t2) | 0, a[0], a[1], a[2], (a[3] + t1) | 0, a[4], a[5], a[6]];
+        }
+        for (j = 0; j < 8; j++) H[j] = (H[j] + a[j]) | 0;
+      }
+      return H.map(function (h) { return ("00000000" + (h >>> 0).toString(16)).slice(-8); }).join("");
+    }
+    window.__uploads = [];
+    window.__pasteEvents = [];
+    function logFiles(files) {
+      Array.prototype.slice.call(files).forEach(function (f) {
+        f.arrayBuffer().then(function (buf) {
+          window.__uploads.push({ name: f.name, size: f.size, sha256: sha256(new Uint8Array(buf)) });
+        });
+      });
+    }
+    document.getElementById("file").addEventListener("change", function (e) { logFiles(e.target.files); });
+    composer.addEventListener("dragover", function (e) { e.preventDefault(); });
+    composer.addEventListener("drop", function (e) {
+      e.preventDefault();
+      if (e.dataTransfer.files.length) logFiles(e.dataTransfer.files);
+    });
+    composer.addEventListener("paste", function (e) {
+      var n = e.clipboardData.files.length;
+      window.__pasteEvents.push({ files: n, text: e.clipboardData.getData("text/plain") });
+      if (n) { e.preventDefault(); logFiles(e.clipboardData.files); }
+    });
   </script>
 </body>
 </html>
