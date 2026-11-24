@@ -6,6 +6,9 @@ It opens your installed Google Chrome under its control and, before anything lea
 text prompts and file uploads for the marker **`WALLED_SENSITIVE`**. If the marker is found, a **native desktop dialog**
 asks you to **Continue** or **Cancel**. It also changes the text colour of every AI response on both sites.
 
+**Demo video:** https://drive.google.com/file/d/1MOSOWlhnq39DuXhY6_SFX97CbE3wIm8l/view?usp=sharing
+(ChatGPT and Perplexity: clean prompt, marker prompt with Cancel and Continue, text / PDF / image files, response colour.)
+
 There is **no browser extension, plugin or add-on**: the app is a Python program that drives Chrome with Playwright.
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the design.
 
