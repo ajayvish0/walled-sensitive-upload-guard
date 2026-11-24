@@ -23,6 +23,8 @@ def confirm(kind: Literal["prompt", "file"], name: str, detail: str = "") -> boo
         return True
     if auto == "cancel":
         return False
+    if kind == "prompt":
+        name = prompt_preview(name)  # never put the full prompt on a command line
     cmd = [sys.executable, "-m", "walled_guard.dialog", "--kind", kind, "--name", name, "--detail", detail]
     try:
         return subprocess.run(cmd, check=False).returncode == 0
@@ -54,9 +56,8 @@ def _show(kind: str, name: str, detail: str) -> int:
     ttk.Label(frame, text=f"Sensitive marker {config.MARKER} detected in {where}",
               font=("Segoe UI", 11, "bold"), foreground="#B00020").pack(anchor="w")
     label = "Prompt:" if kind == "prompt" else "File:"
-    ident = prompt_preview(name) if kind == "prompt" else name
     ttk.Label(frame, text=label, font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(12, 0))
-    ttk.Label(frame, text=ident, wraplength=460, justify="left").pack(anchor="w")
+    ttk.Label(frame, text=name, wraplength=460, justify="left").pack(anchor="w")
     if kind == "file" and detail:
         ttk.Label(frame, text=detail, foreground="#555").pack(anchor="w")
     ttk.Label(frame, text="Do you want to continue?").pack(anchor="w", pady=(14, 8))

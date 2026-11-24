@@ -39,3 +39,16 @@ def test_prompt_preview_truncates():
     out = dialog.prompt_preview("a" * 400)
     assert out.startswith("a" * 150 + "…") and "(400 characters)" in out
     assert "\n" not in dialog.prompt_preview("a\nb")
+
+
+def test_prompt_text_is_not_passed_in_full(monkeypatch):
+    monkeypatch.delenv("WALLED_DIALOG_AUTO", raising=False)
+    seen = {}
+
+    def fake_run(cmd, **kwargs):
+        seen["cmd"] = cmd
+        return subprocess.CompletedProcess(cmd, 0)
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    assert dialog.confirm("prompt", "WALLED_SENSITIVE " + "x" * 100_000) is True
+    assert max(len(arg) for arg in seen["cmd"]) < 300
