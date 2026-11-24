@@ -29,6 +29,7 @@ def launch_context(playwright: Any) -> BrowserContext:
         return playwright.chromium.launch_persistent_context(
             str(config.PROFILE_DIR),
             channel="chrome",
+            chromium_sandbox=True,
             headless=False,
             no_viewport=True,
             args=_LAUNCH_ARGS,
