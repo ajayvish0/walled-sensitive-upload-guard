@@ -4,7 +4,7 @@ window.__WG_SITES = {
     hosts: ["chatgpt.com"],
     composer: ["#prompt-textarea", "div.ProseMirror[contenteditable='true']", "textarea[aria-label='Chat with ChatGPT']", "#mobile-composer-prompt"],
     sendButton: ["button[data-testid='send-button']", "button[aria-label='Send message']", "button[aria-label*='Send' i]"],
-    responseSelectors: ["[data-message-author-role='assistant']"],
+    responseSelectors: ["[data-message-author-role='assistant']", "[data-message-role='assistant']", "[data-assistant-markdown]"],
   },
   perplexity: {
     hosts: ["www.perplexity.ai", "perplexity.ai"],
