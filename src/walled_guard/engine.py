@@ -15,7 +15,7 @@ from .browser import install_guard
 
 logger = logging.getLogger(__name__)
 
-_LAUNCH_ARGS = ["--start-maximized"]
+_LAUNCH_ARGS = ["--start-maximized", "--disable-blink-features=AutomationControlled"]
 
 
 class EngineError(Exception):
