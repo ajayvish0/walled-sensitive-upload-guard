@@ -81,6 +81,51 @@ Unit tests cover detection, decoding, OCR, PDF, the inspector, dialog and bridge
 headless Chrome against a local fake chat page (no network, no login). The dialog is bypassed in tests with
 `WALLED_DIALOG_AUTO=continue|cancel`.
 
+## Architecture
+
+```mermaid
+flowchart LR
+    GUI[gui.py<br/>Tk control window] -->|start / stop| ENG[engine.py<br/>worker thread]
+    ENG -->|launch_persistent_context| CH[(Chrome)]
+    ENG --> BR[browser.py<br/>install_guard]
+    BR -->|add_init_script| JS[inject/*.js<br/>sites, style, guard]
+    JS -->|__wg_inspect_prompt<br/>__wg_inspect_file| BR
+    BR --> BRG[bridge.py]
+    BRG --> INS[inspector.py]
+    INS --> DET[detector.py]
+    INS --> EXT[extractors<br/>text / pdf / image OCR]
+    BRG -->|flagged| DLG[dialog.py<br/>separate Tk process]
+    CH --- JS
+```
+
+How a prompt is intercepted and enforced:
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant G as guard.js (capture phase)
+    participant B as bridge.py
+    participant D as dialog.py (process)
+    participant S as Site code
+    U->>G: Enter / click Send
+    G->>G: preventDefault + stopImmediatePropagation
+    G->>B: __wg_inspect_prompt({site, text})
+    alt no marker
+        B-->>G: allow
+    else marker found
+        B->>D: confirm("prompt", preview)
+        D-->>B: Continue (exit 0) or Cancel (exit 1)
+        B-->>G: allow or block
+    end
+    alt allow
+        G->>S: re-fire the original action once
+    else block
+        G->>U: text stays in the box
+    end
+```
+
+Files follow the same path (`__wg_inspect_file`, one dialog per flagged file). Details: [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## Project layout
 
 ```
