@@ -1,10 +1,8 @@
 """Single entry point for inspecting prompts and files."""
 from __future__ import annotations
 
-import json
 import logging
-import sys
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
@@ -96,18 +94,3 @@ def inspect_file(name: str, data: bytes) -> Verdict:
     except Exception as exc:
         logger.warning("inspection failed (%s); allowing", type(exc).__name__)
         return Verdict(False, "file", name, ftype, "inspection error", str(exc))
-
-
-def main(argv: list[str] | None = None) -> int:
-    """CLI: print the Verdict for a file as JSON."""
-    args = sys.argv[1:] if argv is None else argv
-    if len(args) != 1:
-        print("usage: python -m walled_guard.inspector <file>", file=sys.stderr)
-        return 2
-    path = Path(args[0])
-    print(json.dumps(asdict(inspect_file(path.name, path.read_bytes())), indent=2))
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
