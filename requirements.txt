@@ -1,5 +1,0 @@
-playwright
-pymupdf
-pillow
-pytest
-rapidocr-onnxruntime
