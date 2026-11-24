@@ -3,41 +3,21 @@ from __future__ import annotations
 
 import base64
 import logging
-import time
-from typing import Any, Callable
+from typing import Any
 
 from . import dialog, inspector
 
 logger = logging.getLogger(__name__)
 
-_listener: Callable[[dict], None] | None = None
 _ALLOW_ERR = {"action": "allow", "flagged": False, "reason": "error"}
-
-
-def set_event_listener(fn: Callable[[dict], None] | None) -> None:
-    """Register a callback receiving metadata-only decision events."""
-    global _listener
-    _listener = fn
-
-
-def _emit(site: str, kind: str, name: str, flagged: bool, action: str) -> None:
-    if _listener is None:
-        return
-    try:
-        _listener({"time": time.time(), "site": site, "kind": kind, "name": name,
-                   "flagged": flagged, "action": action})
-    except Exception:
-        logger.exception("event listener failed")
 
 
 def _decide(site: str, verdict: inspector.Verdict, name: str, detail: str, ident: str) -> dict[str, Any]:
     if not verdict.flagged:
-        _emit(site, verdict.kind, name, False, "allow")
         return {"action": "allow", "flagged": False, "reason": verdict.reason}
     proceed = dialog.confirm(verdict.kind, ident, detail)
     action = "allow" if proceed else "block"
     logger.info("flagged %s on %s (%s): %s", verdict.kind, site, name, action)
-    _emit(site, verdict.kind, name, True, action)
     return {"action": action, "flagged": True, "reason": verdict.reason}
 
 

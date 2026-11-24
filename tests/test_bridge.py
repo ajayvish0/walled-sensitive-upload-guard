@@ -13,12 +13,6 @@ def _file(name, site="chatgpt"):
             "b64": base64.b64encode((FIX / name).read_bytes()).decode()}
 
 
-@pytest.fixture(autouse=True)
-def _reset():
-    yield
-    bridge.set_event_listener(None)
-
-
 def test_clean_prompt_no_dialog(monkeypatch):
     def boom(*a, **k):
         raise AssertionError("dialog must not be shown")
@@ -57,16 +51,3 @@ def test_clean_png_no_dialog(monkeypatch):
 def test_malformed_allows(payload):
     assert bridge.handle_prompt(payload)["action"] == "allow"
     assert bridge.handle_file(payload)["action"] == "allow"
-
-
-def test_listener_gets_metadata_only(monkeypatch):
-    monkeypatch.setenv("WALLED_DIALOG_AUTO", "cancel")
-    events = []
-    bridge.set_event_listener(events.append)
-    secret = "top secret plan WALLED_SENSITIVE"
-    bridge.handle_prompt({"site": "chatgpt", "text": secret})
-    bridge.handle_prompt({"site": "chatgpt", "text": "hi"})
-    bridge.handle_file(_file("sensitive.txt"))
-    assert [e["action"] for e in events] == ["block", "allow", "block"]
-    assert all(set(e) == {"time", "site", "kind", "name", "flagged", "action"} for e in events)
-    assert "top secret" not in repr(events)

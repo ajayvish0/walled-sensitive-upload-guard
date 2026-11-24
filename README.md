@@ -2,7 +2,7 @@
 
 A standalone desktop DLP application for **ChatGPT** (https://chatgpt.com) and **Perplexity** (https://www.perplexity.ai).
 
-It opens your installed Google Chrome (or Microsoft Edge) under its control and, before anything leaves the browser, inspects
+It opens your installed Google Chrome under its control and, before anything leaves the browser, inspects
 text prompts and file uploads for the marker **`WALLED_SENSITIVE`**. If the marker is found, a **native desktop dialog**
 asks you to **Continue** or **Cancel**. It also changes the text colour of every AI response on both sites.
 
@@ -12,7 +12,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the design.
 ## Requirements
 
 - Python 3.11 or newer (developed and tested on 3.13)
-- Google Chrome or Microsoft Edge installed
+- Google Chrome installed
 - Windows, macOS or Linux (Linux: `sudo apt install python3-tk`)
 
 ## Setup
@@ -26,7 +26,7 @@ pip install -e ".[dev]"
 python scripts/make_fixtures.py     # optional: regenerates tests/fixtures
 ```
 
-`playwright install` is **not** needed; the installed Chrome/Edge is used.
+`playwright install` is **not** needed; the installed Chrome is used.
 
 ## Run
 
@@ -37,7 +37,7 @@ python -m walled_guard        # or: walled-guard
 1. Click **Start protected browser**. Chrome opens with ChatGPT and Perplexity in two tabs.
 2. Sign in once on each site. The profile is kept in `~/.walled-guard/chrome-profile`, so you stay signed in.
    Prefer **email login**; Google sign-in is often refused in automation-controlled Chrome.
-3. Use the sites normally. The control window shows counters and the recent events (site, prompt/file, name, allowed/blocked).
+3. Use the sites normally. Test with the files in `tests/fixtures/`.
 4. **Stop** or closing the window closes Chrome. Closing Chrome yourself also returns the app to *Stopped*.
 
 ## Usage
@@ -75,7 +75,7 @@ pytest -q
 ```
 
 Unit tests cover detection, decoding, OCR, PDF, the inspector, dialog and bridge. Browser tests run the real page script in
-headless Chrome/Edge against a local fake chat page (no network, no login). The dialog is bypassed in tests with
+headless Chrome against a local fake chat page (no network, no login). The dialog is bypassed in tests with
 `WALLED_DIALOG_AUTO=continue|cancel`.
 
 ## Project layout
@@ -87,10 +87,10 @@ src/walled_guard/
   extractors/                   text decoding, image OCR, PDF text + OCR
   inspector.py                  one entry point: inspect_prompt / inspect_file
   dialog.py                     native Tk confirmation dialog (separate process)
-  bridge.py                     handlers called from the page, decision events
+  bridge.py                     handlers called from the page, decision flow
   inject/                       sites.js (selectors), style.js (colour), guard.js (interception)
   script_builder.py  browser.py builds the page script, wires Playwright bindings
-  engine.py                     launches Chrome/Edge in a worker thread
+  engine.py                     launches Chrome in a worker thread
   gui.py  __main__.py           desktop control window and entry point
 scripts/make_fixtures.py        generates tests/fixtures
 tests/                          unit tests, browser tests, fake chat page
@@ -109,7 +109,7 @@ tests/                          unit tests, browser tests, fake chat page
 
 | Symptom | Fix |
 |---|---|
-| "Install Google Chrome or Microsoft Edge" | Install one of them; the app tries Chrome, then Edge, then bundled Chromium |
+| "Install Google Chrome" | Install Google Chrome; the app launches it through Playwright |
 | Verification loop or Google login refused | Use email login |
 | `__wgDebug()` shows `false` / `0` | The site changed its markup; update `sites.js` |
 | First image or scanned PDF check is slow | The OCR engine loads on first use; later checks are fast |

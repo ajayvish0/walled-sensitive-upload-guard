@@ -3,7 +3,7 @@
 ## Why Playwright-driven Chrome, not an extension
 
 The assignment requires a standalone desktop application and rules out browser extensions, plugins and add-ons. The app
-is therefore a Python program that launches the user's installed Chrome (or Edge) with Playwright and a persistent profile.
+is therefore a Python program that launches the user's installed Chrome with Playwright and a persistent profile.
 Nothing is installed in the browser. The program injects one script into pages of the two supported sites and serves
 two Python functions to it. Pages on any other host are never touched.
 
@@ -11,8 +11,8 @@ two Python functions to it. Pages on any other host are never touched.
 
 ```mermaid
 flowchart LR
-    GUI[gui.py<br/>Tk control window] -->|start / stop / open| ENG[engine.py<br/>worker thread]
-    ENG -->|launch_persistent_context| CH[(Chrome / Edge)]
+    GUI[gui.py<br/>Tk control window] -->|start / stop| ENG[engine.py<br/>worker thread]
+    ENG -->|launch_persistent_context| CH[(Chrome)]
     ENG --> BR[browser.py<br/>install_guard]
     BR -->|add_init_script| JS[inject/*.js<br/>sites, style, guard]
     JS -->|__wg_inspect_prompt<br/>__wg_inspect_file| BR
@@ -21,7 +21,6 @@ flowchart LR
     INS --> DET[detector.py]
     INS --> EXT[extractors<br/>text / pdf / image OCR]
     BRG -->|flagged| DLG[dialog.py<br/>separate Tk process]
-    BRG -->|metadata events| GUI
     CH --- JS
 ```
 
@@ -130,16 +129,16 @@ is CSS keyed on selectors, it applies to streaming and reloaded answers alike. B
 | `extractors/pdf.py` | PDF text layer plus OCR of scanned / image pages |
 | `inspector.py` | File-type detection and the single `inspect_prompt` / `inspect_file` entry points |
 | `dialog.py` | Native confirmation dialog, fail-closed launcher |
-| `bridge.py` | Page-facing handlers, decision flow, metadata events |
+| `bridge.py` | Page-facing handlers, decision flow |
 | `inject/*.js`, `script_builder.py` | Page script: selectors, colour, interception |
 | `browser.py` | Injects the script and exposes the bindings in a Playwright context |
-| `engine.py` | Launches Chrome/Edge (Playwright, one worker thread), serves bindings |
-| `gui.py`, `__main__.py` | Control window, counters, event list, entry point |
+| `engine.py` | Launches Chrome (Playwright, one worker thread), serves bindings |
+| `gui.py`, `__main__.py` | Control window (Start / Stop), entry point |
 
 ## Test strategy
 
 1. **Unit tests** for every pure function and extractor against generated fixtures (text, UTF-16, PDF, scanned PDF, PNG, JPG, corrupt file).
-2. **Test-page tests**: the real `guard.js` and `style.js` run in headless Chrome/Edge on a routed fake chat page. They cover Enter and Send,
+2. **Test-page tests**: the real `guard.js` and `style.js` run in headless Chrome on a routed fake chat page. They cover Enter and Send,
    Cancel then retry, exactly-once send, unchanged text, picker / drop / paste, mixed file batches, SHA-256 equality after Continue,
    fail-open / fail-closed paths and untouched foreign hosts.
 3. **Live acceptance** on the real sites: clean and marker prompts, each file type, drag-drop and screenshot paste,
