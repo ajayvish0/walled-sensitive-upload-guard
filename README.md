@@ -116,4 +116,6 @@ tests/                          unit tests, browser tests, fake chat page
 | Verification loop or Google login refused | Use email login |
 | `__wgDebug()` shows `false` / `0` | The site changed its markup; update `sites.js` |
 | First image or scanned PDF check is slow | The OCR engine loads on first use; later checks are fast |
+| Chrome shows "unsupported command-line flag" | Harmless; the app starts Chrome through Playwright. Close the bar with its X |
+| ChatGPT shows "Verify you are human" | Cloudflare's check for automated browsers. Tick it once and wait; it can take up to a minute |
 | Dialog does not appear | Check `~/.walled-guard/guard.log`; if it cannot be shown the action is blocked |
