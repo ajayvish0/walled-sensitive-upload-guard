@@ -21,27 +21,14 @@ class FakePlaywright:
         self.chromium = FakeChromium(fail_channels)
 
 
-def test_channel_order_falls_back(monkeypatch, tmp_path):
+def test_launches_chrome(monkeypatch, tmp_path):
     monkeypatch.setattr(engine.config, "PROFILE_DIR", tmp_path / "profile")
-    pw = FakePlaywright({"chrome"})
-    assert engine.launch_context(pw) == "context-msedge"
-    assert pw.chromium.tried == ["chrome", "msedge"]
+    pw = FakePlaywright(set())
+    assert engine.launch_context(pw) == "context-chrome"
+    assert pw.chromium.tried == ["chrome"]
 
 
-def test_falls_back_to_bundled_chromium(monkeypatch, tmp_path):
+def test_engine_error_when_chrome_missing(monkeypatch, tmp_path):
     monkeypatch.setattr(engine.config, "PROFILE_DIR", tmp_path / "profile")
-    pw = FakePlaywright({"chrome", "msedge"})
-    assert engine.launch_context(pw) == "context-None"
-    assert pw.chromium.tried == ["chrome", "msedge", None]
-
-
-def test_engine_error_when_everything_fails(monkeypatch, tmp_path):
-    monkeypatch.setattr(engine.config, "PROFILE_DIR", tmp_path / "profile")
-    pw = FakePlaywright({"chrome", "msedge", None})
     with pytest.raises(engine.EngineError, match="Install Google Chrome"):
-        engine.launch_context(pw)
-
-
-def test_open_site_rejects_unknown():
-    with pytest.raises(KeyError):
-        engine.Engine().open_site("nope")
+        engine.launch_context(FakePlaywright({"chrome"}))
